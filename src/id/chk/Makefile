@@ -19,8 +19,8 @@ ifeq ($(DO_UNITTEST), yes)
 ifeq ($(compile64), 1)
 all: $(ALTI_HOME)/bin/checkPlatform 
 else
-# BUGBUG 32bit ÄÄÆÄÀÏ½Ã ¸µÅ©¿¡·¯ ¹ß»ýÇÏ±â ¶§¹®¿¡ ¼öÁ¤ÇÏ±â Àü±îÁö ¸·¾ÆµÒ.
-# $(DEV_DIR)/rule.mk¿Í µ¿½Ã¿¡ ¼öÁ¤ÇØ¾ß ÇÑ´Ù.
+# BUGBUG 32bit ì»´íŒŒì¼ì‹œ ë§í¬ì—ëŸ¬ ë°œìƒí•˜ê¸° ë•Œë¬¸ì— ìˆ˜ì •í•˜ê¸° ì „ê¹Œì§€ ë§‰ì•„ë‘ .
+# $(DEV_DIR)/rule.mkì™€ ë™ì‹œì— ìˆ˜ì •í•´ì•¼ í•œë‹¤.
 all: fake
 endif
 else
@@ -31,7 +31,7 @@ endif
 fake :
 	touch $(GREPED_FILE)
 
-## BUGBUG : test ÇÁ·Î±×·¥À» ´Ù½Ã Á¤±³ÇÏ°Ô ÀÛ¼º ¿ä¸Á.
+## BUGBUG : test í”„ë¡œê·¸ëž¨ì„ ë‹¤ì‹œ ì •êµí•˜ê²Œ ìž‘ì„± ìš”ë§.
 $(ALTI_HOME)/bin/checkPlatform : $(ALTI_HOME)/bin/checkEnv$(BINEXT)
 	@echo
 	@echo "Testing Runtime Env..."
@@ -64,9 +64,6 @@ $(ALTI_HOME)/bin/checkCond: $(TARGET_DIR)/src/id/chk/checkCond.$(OBJEXT) $(TARGE
 	$(CXX) $(CCFLAGS) $(CPPFLAGS) $(DEFINES) $(PTDIRS) $(INCLUDES)  $(LIBDIRS) -o $@ $< $(TARGET_DIR)/src/id/idl/idl_utl.$(OBJEXT) $(ID_DIR)/idu/iduVersion.cpp -lpd $(LIBS)
 
 $(ALTI_HOME)/bin/checkType: $(TARGET_DIR)/src/id/chk/checkType.$(OBJEXT) $(TARGET_DIR)/src/id/idl/idl_utl.$(OBJEXT)
-	$(CXX) $(CCFLAGS) $(CPPFLAGS) $(DEFINES) $(PTDIRS) $(INCLUDES) $(LFLAGS) $(LIBDIRS) -o $@ $< $(TARGET_DIR)/src/id/idl/idl_utl.$(OBJEXT) $(ID_DIR)/idu/iduVersion.cpp -lpd $(LIBS)
-
-$(ALTI_HOME)/bin/crackPurify: $(TARGET_DIR)/src/id/chk/crackPurify.$(OBJEXT) $(TARGET_DIR)/src/id/idl/idl_utl.$(OBJEXT)
 	$(CXX) $(CCFLAGS) $(CPPFLAGS) $(DEFINES) $(PTDIRS) $(INCLUDES) $(LFLAGS) $(LIBDIRS) -o $@ $< $(TARGET_DIR)/src/id/idl/idl_utl.$(OBJEXT) $(ID_DIR)/idu/iduVersion.cpp -lpd $(LIBS)
 
 check :
