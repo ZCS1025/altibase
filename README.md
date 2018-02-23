@@ -112,7 +112,7 @@
 - re2c 
   /home/user/local/pkg$ tar xvf ./re2c-0.13.5.tar.gz
   /home/user/local/pkg$ cd ./re2c-0.13.5
-  /home/user/local/pkg/re2c-0.13.5$ ./configure --prefix=/user/local
+  /home/user/local/pkg/re2c-0.13.5$ ./configure
   /home/user/local/pkg/re2c-0.13.5$ make
   /home/user/local/pkg/re2c-0.13.5$ make install
 - Locale setting
