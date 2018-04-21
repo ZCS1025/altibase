@@ -81,7 +81,7 @@
   --with-libelf=/usr/elf \
   make; make install
 - Install both of Oracle Java JDK 1.5 and 1.7
-- Install development tools
+- Install development tools (bison 2.4.1 version ; flex 2.5.35 version)
   autoconf
   g++
   gawk
