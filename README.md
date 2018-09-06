@@ -16,7 +16,7 @@
 
 ### License
 - Altibase is an open source with GNU Affero General Public License version 3(GNU AGPLv3) for the Altibase server code and GNU Lesser General Public License version 3(GNU LGPLv3) for the Altibase client code. 
-- While Altibase is free, we provide a paid support subscription for those who wish to have professional support.
+- The products that can be downloaded from this site are open source versions. Please contact Altibase for Altibase enterprise edition products.
 - License information can be found in the COPYING files.
 - Altibase includes GPC sources, so, if you want to use those sources for commertial use then you need to buy "General Polygon Clipper (GPC) License".
 
