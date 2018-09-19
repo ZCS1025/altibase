@@ -82,12 +82,14 @@
   make; make install
 - Install both of Oracle Java JDK 1.5 and 1.7
 - Install https://www.openssl.org/source/openssl-1.0.2o.tar.gz 
-- Install development tools (bison 2.4.1 version ; flex 2.5.35 version)
+- Install development tools 
   autoconf
+  autopoint
+  texinfo
   g++
   gawk
-  flex
-  bison
+  flex (2.5.35 version)
+  bison (2.4.1 version)
   libncurses5-dev
   binutils-dev
   ddd
