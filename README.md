@@ -59,7 +59,7 @@
   kernel.core_pattern = core.%e.%t
 - glibc 2.12 ~ 2.20
 - gcc 4.6.3
-  Install following libraries
+- Install following libraries
   https://gmplib.org/ 
   http://www.mpfr.org/
   http://www.multiprecision.org/
@@ -81,6 +81,7 @@
   --with-libelf=/usr/elf \
   make; make install
 - Install both of Oracle Java JDK 1.5 and 1.7
+- Install https://www.openssl.org/source/openssl-1.0.2o.tar.gz 
 - Install development tools (bison 2.4.1 version ; flex 2.5.35 version)
   autoconf
   g++
