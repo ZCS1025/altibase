@@ -85,6 +85,7 @@
 - Install development tools 
   autoconf
   autopoint
+  help2man
   texinfo
   g++
   gawk
