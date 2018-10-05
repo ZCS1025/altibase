@@ -22,20 +22,20 @@
 
 ### Build environment setting steps
 <pre><code>
-- OS: Red Hat Enterprise Linux 6.x
+- OS: Red Hat or Ubuntu
 - CPU: x86_64
-- selinux disabling
+- selinux disabling (optional)
   vi /etc/sysconfig/selinux 
   SELINUX=disabled
-- ntsysv 
+- ntsysv  (optional)
   IPTables = iptables, ip6tables *uncheck*
   vsftpd = *check* 
   /etc/init.d/iptable stop
   /etc/init.d/vsftpd start
-- /etc/rc.local
+- /etc/rc.local  (optional)
   echo 16147483648 > /proc/sys/kernel/shmmax
   echo 1024 32000 1024 1024 > /proc/sys/kernel/sem
-- /etc/sysctl.conf
+- /etc/sysctl.conf  (optional)
   # Controls the default maxmimum size of a mesage queue
   kernel.msgmnb = 65536
   # Controls the maximum size of a message, in bytes
@@ -47,7 +47,7 @@
   fs.suid_dumpable = 1
   fs.aio-max-nr = 1048576
   fs.file-max = 6815744
-  # semaphores: semmsl, semmns, semopm, semmni
+  # semaphores: semmsl, semmns, semopm, semmni  
   kernel.sem = 1024 32000 1024 1024
   net.ipv4.ip_local_port_range = 32768 61000
   net.core.rmem_default = 4194304
@@ -59,7 +59,7 @@
   kernel.core_pattern = core.%e.%t
 - glibc 2.12 ~ 2.20
 - gcc 4.6.3
-- Install following libraries
+- Install following libraries  (optional)
   https://gmplib.org/ 
   http://www.mpfr.org/
   http://www.multiprecision.org/
